@@ -358,36 +358,36 @@ func resourceBuildConfigUpdate(d *schema.ResourceData, meta interface{}) error {
 		d.SetPartial("vcs_root")
 	}
 
-	if d.HasChange("step") {
-		log.Printf("[DEBUG] resourceBuildConfigUpdate: change detected for steps")
-		o, n := d.GetChange("step")
-		os := o.([]interface{})
-		ns := n.([]interface{})
+	// if d.HasChange("step") {
+	// 	log.Printf("[DEBUG] resourceBuildConfigUpdate: change detected for steps")
+	// 	o, n := d.GetChange("step")
+	// 	os := o.([]interface{})
+	// 	ns := n.([]interface{})
 
-		remove, _ := expandBuildSteps(os)
-		add, err := expandBuildSteps(ns)
+	// 	remove, _ := expandBuildSteps(os)
+	// 	add, err := expandBuildSteps(ns)
 
-		if err != nil {
-			return err
-		}
-		if len(remove) > 0 {
-			for _, s := range remove {
-				err := client.BuildTypes.DeleteStep(dt.ID, s.GetID())
-				if err != nil {
-					return err
-				}
-			}
-		}
-		if len(add) > 0 {
-			for _, s := range add {
-				_, err := client.BuildTypes.AddStep(dt.ID, s)
-				if err != nil {
-					return err
-				}
-			}
-		}
-		d.SetPartial("step")
-	}
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// 	if len(remove) > 0 {
+	// 		for _, s := range remove {
+	// 			err := client.BuildTypes.DeleteStep(dt.ID, s.GetID())
+	// 			if err != nil {
+	// 				return err
+	// 			}
+	// 		}
+	// 	}
+	// 	if len(add) > 0 {
+	// 		for _, s := range add {
+	// 			_, err := client.BuildTypes.AddStep(dt.ID, s)
+	// 			if err != nil {
+	// 				return err
+	// 			}
+	// 		}
+	// 	}
+	// 	d.SetPartial("step")
+	// }
 
 	if d.HasChange("templates") {
 		log.Printf("[DEBUG] resourceBuildConfigUpdate: change detected for templates")
