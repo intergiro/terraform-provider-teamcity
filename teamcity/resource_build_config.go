@@ -378,7 +378,6 @@ func resourceBuildConfigUpdate(d *schema.ResourceData, meta interface{}) error {
 
 		if len(remove) > 0 {
 			for _, s := range remove {
-				log.Printf("[DEBUG] stepid '%v'", s.GetID())
 				err := client.BuildTypes.DeleteStep(dt.ID, s.GetID())
 				if err != nil {
 					return err
@@ -387,7 +386,6 @@ func resourceBuildConfigUpdate(d *schema.ResourceData, meta interface{}) error {
 		}
 		if len(add) > 0 {
 			for _, s := range add {
-				log.Printf("[DEBUG] step '%v'", s)
 				_, err := client.BuildTypes.AddStep(dt.ID, s)
 				if err != nil {
 					return err
