@@ -332,6 +332,11 @@ func resourceBuildConfigUpdate(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 
+	if dt.IsTemplate == false && len(dt.Steps) > 0 {
+		var emptySteps []api.Step
+		dt.Steps = emptySteps
+	}
+
 	if changed {
 		_, err := client.BuildTypes.Update(dt)
 		d.SetPartial("settings")
@@ -370,6 +375,7 @@ func resourceBuildConfigUpdate(d *schema.ResourceData, meta interface{}) error {
 		if err != nil {
 			return err
 		}
+
 		if len(remove) > 0 {
 			for _, s := range remove {
 				err := client.BuildTypes.DeleteStep(dt.ID, s.GetID())
@@ -478,7 +484,7 @@ func resourceBuildConfigRead(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return err
 	}
-	if steps != nil && len(steps) > 0 {
+	if steps != nil && dt.IsTemplate == true && len(steps) > 0 {
 		var stepsToSave []map[string]interface{}
 		for _, el := range steps {
 			l, err := flattenBuildStep(el)
