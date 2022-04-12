@@ -332,6 +332,11 @@ func resourceBuildConfigUpdate(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 
+	if dt.IsTemplate == false && len(dt.Steps) > 0 {
+		var emptySteps []api.Step
+		dt.Steps = emptySteps
+	}
+
 	if changed {
 		_, err := client.BuildTypes.Update(dt)
 		d.SetPartial("settings")
@@ -358,36 +363,39 @@ func resourceBuildConfigUpdate(d *schema.ResourceData, meta interface{}) error {
 		d.SetPartial("vcs_root")
 	}
 
-	// if d.HasChange("step") {
-	// 	log.Printf("[DEBUG] resourceBuildConfigUpdate: change detected for steps")
-	// 	o, n := d.GetChange("step")
-	// 	os := o.([]interface{})
-	// 	ns := n.([]interface{})
+	if d.HasChange("step") {
+		log.Printf("[DEBUG] resourceBuildConfigUpdate: change detected for steps")
+		o, n := d.GetChange("step")
+		os := o.([]interface{})
+		ns := n.([]interface{})
 
-	// 	remove, _ := expandBuildSteps(os)
-	// 	add, err := expandBuildSteps(ns)
+		remove, _ := expandBuildSteps(os)
+		add, err := expandBuildSteps(ns)
 
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// 	if len(remove) > 0 {
-	// 		for _, s := range remove {
-	// 			err := client.BuildTypes.DeleteStep(dt.ID, s.GetID())
-	// 			if err != nil {
-	// 				return err
-	// 			}
-	// 		}
-	// 	}
-	// 	if len(add) > 0 {
-	// 		for _, s := range add {
-	// 			_, err := client.BuildTypes.AddStep(dt.ID, s)
-	// 			if err != nil {
-	// 				return err
-	// 			}
-	// 		}
-	// 	}
-	// 	d.SetPartial("step")
-	// }
+		if err != nil {
+			return err
+		}
+
+		if len(remove) > 0 {
+			for _, s := range remove {
+				log.Printf("[DEBUG] stepid '%v'", s.GetID())
+				err := client.BuildTypes.DeleteStep(dt.ID, s.GetID())
+				if err != nil {
+					return err
+				}
+			}
+		}
+		if len(add) > 0 {
+			for _, s := range add {
+				log.Printf("[DEBUG] step '%v'", s)
+				_, err := client.BuildTypes.AddStep(dt.ID, s)
+				if err != nil {
+					return err
+				}
+			}
+		}
+		d.SetPartial("step")
+	}
 
 	if d.HasChange("templates") {
 		log.Printf("[DEBUG] resourceBuildConfigUpdate: change detected for templates")
@@ -478,7 +486,7 @@ func resourceBuildConfigRead(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return err
 	}
-	if steps != nil && len(steps) > 0 {
+	if steps != nil && dt.IsTemplate == true && len(steps) > 0 {
 		var stepsToSave []map[string]interface{}
 		for _, el := range steps {
 			l, err := flattenBuildStep(el)
