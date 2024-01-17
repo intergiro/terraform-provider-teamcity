@@ -43,7 +43,7 @@ function validate-version {
 root_path="/go/src/github.com/$GITHUB_REPOSITORY"
 release_path="$GITHUB_WORKSPACE/.release"
 repo_name="$(echo $GITHUB_REPOSITORY | cut -d '/' -f2)"
-targets=${@-"darwin/amd64 darwin/386 linux/amd64 linux/386 windows/amd64 windows/386"}
+targets=${@-"darwin/amd64 darwin/386 darwin/arm64 linux/amd64 linux/386 windows/amd64 windows/386"}
 version="${GITHUB_REF##*/}"
 
 validate-version $version
