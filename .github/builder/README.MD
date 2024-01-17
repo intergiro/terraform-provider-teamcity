@@ -19,7 +19,7 @@ action "build" {
 Basic workflow configuration will compile binaries for the following platforms:
 
 - linux: 386/amd64
-- darwin: 386/amd64
+- darwin: 386/amd64/arm64
 - windows: 386/amd64
 
 Alternatively you can provide a list of target architectures in `arg`:
