@@ -4,32 +4,33 @@ on:
     tags:
       - v*
 jobs:
-  build:
-    name: Build
-    runs-on: ubuntu-latest
-    env:
-      GO111MODULE: on
-    steps:
-      - uses: actions/checkout@v1
-      - uses: ./.github/builder
-      - uses: actions/upload-artifact@v1
-        with:
-          name: binaries
-          path: .release
-  publish:
-    name: Publish
-    needs: build
+  goreleaser:
+    name: Build and publish to registry
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
-      - uses: actions/download-artifact@v1
-        with:
-          name: binaries
-          path: .release
-      - name: github-upload-release
-        uses: docker://moonswitch/github-upload-release:master
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          args: not actor nektos/act
+      - name: Checkout
+        uses: actions/checkout@v2
 
+      - name: Unshallow
+        run: git fetch --prune --unshallow
+
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.16
+
+      - name: Import GPG key
+        id: import_gpg
+        uses: crazy-max/ghaction-import-gpg@v6
+        with:
+          gpg_private_key: ${{ secrets.BOT_GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.BOT_GPG_PASSPHRASE }}
+
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v2
+        with:
+          version: latest
+          args: release --rm-dist
+        env:
+          GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
